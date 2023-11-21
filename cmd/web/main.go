@@ -23,20 +23,11 @@ func main() {
 		errorLog: errorLog,
 		infoLog:  infoLog,
 	}
-	mux := http.NewServeMux()
-
-	// Serve a directory
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
-
-	mux.HandleFunc("/", app.Home)
-	mux.HandleFunc("/snippet/view", app.SnippetView)
-	mux.HandleFunc("/snippet/create", app.SnippetCreate)
 
 	srv := &http.Server{
 		Addr:     "127.0.0.1" + *addr, //Addr needs 127.0.0.1 to silence MacOS popUp
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
 	infoLog.Println("Starting server on port", *addr)
