@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"snippetbox.lguedes.ft/internal/models"
 )
@@ -21,9 +23,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, http.StatusOK, "home.tmpl", &templateData{
-		Snippets: snippets,
-	})
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
+
+	app.render(w, http.StatusOK, "home.tmpl", data)
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -43,10 +46,10 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, http.StatusOK, "view.tmpl", &templateData{
-		Snippet: snippet,
-	})
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
 
+	app.render(w, http.StatusOK, "view.tmpl", data)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
@@ -75,9 +78,22 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 		app.serverError(w, err)
 		return
 	}
-	w.WriteHeader(status)
-	err := ts.ExecuteTemplate(w, "base", data)
+
+	buf := new(bytes.Buffer)
+
+	err := ts.ExecuteTemplate(buf, "base", data)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	w.WriteHeader(status)
+	buf.WriteTo(w)
+}
+
+func (app *application) newTemplateData(r *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
+	}
+
 }

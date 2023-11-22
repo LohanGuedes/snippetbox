@@ -8,8 +8,9 @@ import (
 )
 
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -33,7 +34,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 			return nil, err
 		}
 
-		ts, err = template.ParseFiles(page)
+		ts, err = ts.ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
