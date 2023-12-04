@@ -8,14 +8,17 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.lguedes.ft/internal/models"
+
+	"github.com/go-playground/form/v4"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	snippets      *models.SnippetModel
+	formDecoder   *form.Decoder
 	templateCache map[string]*template.Template
 }
 
@@ -48,15 +51,19 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+
+	formDecoder := form.NewDecoder()
+
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
+		formDecoder:   formDecoder,
 	}
 
 	srv := &http.Server{
-		Addr:     "127.0.0.1" + *addr, //Addr needs 127.0.0.1 to silence MacOS popUp
+		Addr:     "127.0.0.1" + *addr, // Addr needs 127.0.0.1 to silence MacOS popUp
 		Handler:  app.routes(),
 		ErrorLog: errorLog,
 	}
