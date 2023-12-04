@@ -7,19 +7,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"snippetbox.lguedes.ft/internal/models"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	snippets      *models.SnippetModel
-	formDecoder   *form.Decoder
-	templateCache map[string]*template.Template
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	snippets       *models.SnippetModel
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
+	templateCache  map[string]*template.Template
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -54,16 +58,21 @@ func main() {
 
 	formDecoder := form.NewDecoder()
 
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
 	app := &application{
-		errorLog:      errorLog,
-		infoLog:       infoLog,
-		snippets:      &models.SnippetModel{DB: db},
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		snippets:       &models.SnippetModel{DB: db},
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
+		sessionManager: sessionManager,
 	}
 
 	srv := &http.Server{
-		Addr:     "127.0.0.1" + *addr, // Addr needs 127.0.0.1 to silence MacOS popUp
+		Addr:     "localhost" + *addr, // Addr needs 127.0.0.1(localhost) to silence MacOS popUp
 		Handler:  app.routes(),
 		ErrorLog: errorLog,
 	}
