@@ -3,6 +3,8 @@ package main
 import (
 	"testing"
 	"time"
+
+	"snippetbox.lguedes.ft/internal/assert"
 )
 
 func TestHumanDate(t *testing.T) {
@@ -32,7 +34,7 @@ func TestHumanDate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := humanDate(tt.tm)
 			if got != tt.want {
-				t.Errorf("want %q; got %q", tt.want, got)
+				assert.Equal(t, tt.want, got)
 			}
 		})
 	}
