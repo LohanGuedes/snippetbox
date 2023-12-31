@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+// Usually when naming a interface we use the 'er' as a sulfix. but in this case, we're not.
+type SnippetModelInterface interface {
+	Insert(title, content string, expires int) (int, error)
+	Get(id int) (*Snippet, error)
+	Latest() ([]*Snippet, error)
+}
+
 type Snippet struct {
 	ID      int
 	Title   string
@@ -74,5 +81,4 @@ func (m *SnippetModel) Latest() ([]*Snippet, error) {
 	}
 
 	return snippets, nil
-
 }
