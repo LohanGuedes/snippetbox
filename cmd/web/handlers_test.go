@@ -11,29 +11,19 @@ import (
 )
 
 func TestPing(t *testing.T) {
-	rr := httptest.NewRecorder()
+	app := newTestApplication(t)
 
-	r, err := http.NewRequest(http.MethodGet, "/ping", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ts := newTestServer(t, app.routes())
 
-	ping(rr, r)
-	rs := rr.Result()
-	defer rs.Body.Close()
+	status, _, body := ts.Get(t, "/ping")
 
-	body, err := io.ReadAll(rs.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, "OK", string(body))
+	assert.Equal(t, "OK", body)
+	assert.Equal(t, http.StatusOK, status)
 }
 
 func TestSecureHeaders(t *testing.T) {
-	// Setup:
 	rr := httptest.NewRecorder()
-	r, err := http.NewRequest(http.MethodGet, "/", nil) // Make a request
+	r, err := http.NewRequest(http.MethodGet, "/", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
