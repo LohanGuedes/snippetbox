@@ -1,11 +1,13 @@
 package main
 
 import (
+	"html"
 	"io"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 	"time"
 
@@ -13,6 +15,19 @@ import (
 	"github.com/go-playground/form/v4"
 	"snippetbox.lguedes.ft/internal/models/mocks"
 )
+
+var csrfTokenRX = regexp.MustCompile(`<input type="hidden" name="csrf_token" value="(.+)">`)
+
+func extractCSRFToken(t *testing.T, body string) string {
+	matches := csrfTokenRX.FindStringSubmatch(body)
+	if len(matches) < 2 {
+		t.Fatal("No CSRF token found in body")
+	}
+
+	// Must use UnescapeStrig in order to check fo values such as '+' that can
+	// Be present inside the base64 encoded token (string)
+	return html.UnescapeString(string(matches[1]))
+}
 
 func newTestApplication(t *testing.T) *application {
 	templateCache, err := newTemplateCache()

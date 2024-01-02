@@ -17,6 +17,7 @@ type templateData struct {
 	Snippets        []*models.Snippet
 	IsAuthenticated bool
 	CurrentYear     int
+	CSRFToken       string
 }
 
 func humanDate(t time.Time) string {

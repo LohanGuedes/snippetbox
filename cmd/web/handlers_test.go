@@ -10,6 +10,17 @@ import (
 	"snippetbox.lguedes.ft/internal/assert"
 )
 
+func TestUserSignup(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	_, _, body := ts.Get(t, "/user/signup")
+	t.Log(body)
+	csrfToken := extractCSRFToken(t, body)
+	t.Logf("CSRF token in: %q", csrfToken)
+}
+
 func TestPing(t *testing.T) {
 	app := newTestApplication(t)
 
@@ -80,4 +91,51 @@ func TestSecureHeaders(t *testing.T) {
 		})
 	}
 	assert.Equal(t, "OK", string(body))
+}
+
+func TestSnippetView(t *testing.T) {
+	app := newTestApplication(t)
+
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name     string
+		urlPath  string
+		wantBody string
+		wantCode int
+	}{
+		{
+			name:     "Valid ID",
+			urlPath:  "/snippet/view/1",
+			wantCode: http.StatusOK,
+			wantBody: "An Old Silent Pond...",
+		},
+		{
+			name:     "Non-existent ID",
+			urlPath:  "/snippet/view/999",
+			wantCode: http.StatusNotFound,
+		},
+		{
+			name:     "Negative ID",
+			urlPath:  "/snippet/view/-1",
+			wantCode: http.StatusNotFound,
+		},
+		{
+			name:     "Decimal ID",
+			urlPath:  "/snippet/view/1.23",
+			wantCode: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code, _, body := ts.Get(t, tt.urlPath)
+			assert.Equal(t, tt.wantCode, code)
+
+			if tt.wantBody != "" {
+				assert.StringContains(t, tt.wantBody, body)
+			}
+		})
+	}
 }
