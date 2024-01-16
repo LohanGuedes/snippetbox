@@ -20,3 +20,10 @@ func Equal[T comparable](t *testing.T, expected, actual T) {
 		t.Errorf("Expected %v; Got %v", expected, actual)
 	}
 }
+
+func NilError(t *testing.T, actual error) {
+	t.Helper()
+	if actual != nil {
+		t.Errorf("Expected: <nil>; Got %v", actual)
+	}
+}
